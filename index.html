@@ -9,22 +9,28 @@
   body { font-family: -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
     background:#f4f5f7; color:#1d2129; line-height:1.6; padding:20px 14px 60px; }
   .wrap { max-width:720px; margin:0 auto; }
-  header { text-align:center; margin-bottom:20px; }
+  header { text-align:center; margin-bottom:18px; }
   header h1 { font-size:22px; font-weight:700; }
   header p { color:#86909c; font-size:13px; margin-top:5px; }
   .card { background:#fff; border-radius:14px; padding:18px; box-shadow:0 2px 12px rgba(0,0,0,.05); }
   .input-card { margin-bottom:16px; }
   label { font-size:13px; color:#4e5969; font-weight:600; display:block; margin-bottom:8px; }
+  .cats { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .cat { border:1.5px solid #e5e6eb; background:#fff; border-radius:10px; padding:8px 12px;
+    font-size:14px; cursor:pointer; color:#4e5969; display:flex; align-items:center; gap:6px; transition:.12s; }
+  .cat.on { border-color:#165dff; background:#165dff; color:#fff; }
+  .cat .heat { font-size:11px; opacity:.7; }
+  .cat .fire { font-size:11px; }
   textarea, input.key { width:100%; border:1.5px solid #e5e6eb; border-radius:10px; padding:11px 13px;
     font-size:15px; font-family:inherit; outline:none; }
-  textarea { resize:vertical; min-height:64px; }
+  textarea { resize:vertical; min-height:56px; }
   textarea:focus, input.key:focus { border-color:#165dff; }
-  button { margin-top:12px; width:100%; border:0; border-radius:10px; background:#165dff; color:#fff;
+  button.gen { margin-top:12px; width:100%; border:0; border-radius:10px; background:#165dff; color:#fff;
     font-size:16px; font-weight:600; padding:13px; cursor:pointer; }
-  button:disabled { background:#a9c0ff; }
+  button.gen:disabled { background:#a9c0ff; }
   .keyrow { margin-top:12px; font-size:12px; }
   .keyrow summary { color:#86909c; cursor:pointer; }
-  .keyrow .save { background:#00b42a; margin-top:8px; padding:9px; font-size:14px; }
+  .keyrow .save { background:#00b42a; color:#fff; border:0; border-radius:8px; margin-top:8px; padding:9px 14px; font-size:14px; cursor:pointer; }
   .ok { color:#00b42a; font-weight:600; }
   .meta-bar { font-size:12px; color:#86909c; margin:16px 2px 10px; }
   .result { margin-bottom:12px; }
@@ -32,9 +38,11 @@
   .row { font-size:13.5px; color:#4e5969; margin:4px 0; }
   .tag { display:inline-block; background:#e8f3ff; color:#165dff; border-radius:6px; padding:1px 8px; font-size:12px; font-weight:600; }
   .chip { display:inline-block; background:#fff3e8; color:#ff7d00; border-radius:6px; padding:1px 8px; font-size:12px; font-weight:600; }
+  .base { display:inline-block; background:#f0f9eb; color:#00a838; border-radius:6px; padding:1px 8px; font-size:12px; font-weight:600; }
   .disclaimer { font-size:11.5px; color:#c9cdd4; margin-top:9px; border-top:1px dashed #f0f1f3; padding-top:7px; }
   .err { color:#f53f3f; font-size:14px; padding:14px; }
   .foot { text-align:center; font-size:12px; color:#c9cdd4; margin-top:24px; line-height:1.8; }
+  .foot a { color:#86909c; }
   .loading { text-align:center; color:#86909c; padding:20px; }
 </style>
 </head>
@@ -42,19 +50,21 @@
 <div class="wrap">
   <header>
     <h1>热搜话题词 AI 优化工具</h1>
-    <p>输入话题方向，AI 结合今日热词给出更易上榜的话题词</p>
+    <p>选品类 + 输入词，AI 基于该品类真实历史打榜规律给建议</p>
   </header>
 
   <div class="card input-card">
-    <label>你的话题方向 / 现有话题词</label>
-    <textarea id="topic" placeholder="例如：尊界、新能源车降价、理想L8…"></textarea>
-    <button id="gen" onclick="run()">AI 生成优化话题词</button>
+    <label>① 选品类（按当前热度排行）</label>
+    <div class="cats" id="cats"></div>
+    <label>② 你的词 / 话题方向</label>
+    <textarea id="topic" placeholder="例如：尊界、小米SU7、某社会事件…"></textarea>
+    <button class="gen" id="gen" onclick="run()">AI 生成打榜话题词</button>
 
     <details class="keyrow" id="keyDetails">
-      <summary id="keySummary">⚙️ 设置 API Key（首次使用必填，只存你本机）</summary>
+      <summary id="keySummary">⚙️ 设置 API Key（首次必填，只存你本机）</summary>
       <input class="key" id="key" type="password" style="margin-top:8px" placeholder="粘贴你的智谱 GLM API Key">
       <button class="save" onclick="saveKey()">保存 Key</button>
-      <div style="margin-top:6px;color:#a9aeb8">Key 只存在你手机浏览器，不上传任何服务器、不进本页源码。免费 key 在 open.bigmodel.cn 注册领取。</div>
+      <div style="margin-top:6px;color:#a9aeb8">Key 只存你手机浏览器，不上传服务器、不进本页源码。免费 key 在 open.bigmodel.cn 领。</div>
     </details>
   </div>
 
@@ -62,86 +72,84 @@
   <div id="out"></div>
 
   <div class="foot">
-    数据：<span id="datasrc">实时微博热搜</span> · 模型：智谱 GLM-4-Flash<br>
-    传播潜力仅供参考，<b>不保证上榜</b>——热度还取决于发布时机、账号权重、突发事件
+    数据：真实微博历史热搜 + 今日在榜 · 模型：智谱 GLM-4-Flash<br>
+    传播潜力仅供参考，<b>不保证上榜</b>——热度还取决于发布时机、账号权重、突发事件<br>
+    <a href="plan.html">📄 查看完整产品方案（含数据证据）</a>
   </div>
 </div>
 
 <script>
-const HOTWORDS = [{"rank": 1, "title": "葡萄牙首发"}, {"rank": 2, "title": "理想L8价格"}, {"rank": 3, "title": "万千气象看重庆"}, {"rank": 4, "title": "女装退货率终于有救了"}, {"rank": 5, "title": "美股"}, {"rank": 6, "title": "你要知道我很少站老一辈这边的"}, {"rank": 7, "title": "C罗首发"}, {"rank": 8, "title": "南部档案 三个结局"}, {"rank": 9, "title": "2025T1冠军皮肤"}, {"rank": 10, "title": "檀健次直播迟到39分钟"}, {"rank": 11, "title": "平台通报李金铭假婆婆事件"}, {"rank": 12, "title": "柬埔寨电诈 刘忍"}, {"rank": 13, "title": "乔欣变样了"}, {"rank": 14, "title": "王伊瑶透露赵丽颖近况"}, {"rank": 15, "title": "C罗再进两球将创葡足历史"}, {"rank": 16, "title": "李金铭回应"}, {"rank": 17, "title": "广德车祸受伤3岁男童最新情况"}, {"rank": 18, "title": "杨幂杨紫白玉兰提名VCR"}, {"rank": 19, "title": "日本公寓藏尸15年"}, {"rank": 20, "title": "papi酱 非常清醒的内容创作者"}, {"rank": 21, "title": "高考成绩"}, {"rank": 22, "title": "开屏广告没了"}, {"rank": 23, "title": "恋与深空"}, {"rank": 24, "title": "唐艺昕李小冉王濛顶峰相见"}, {"rank": 25, "title": "穆祉丞泡泡更新"}, {"rank": 26, "title": "在图书馆被紫外消毒灯照了12个小时"}, {"rank": 27, "title": "印度一天或热死3400人"}, {"rank": 28, "title": "田曦薇魏大勋赢家拍摄90天"}, {"rank": 29, "title": "霍尔木兹海峡已免费开放"}, {"rank": 30, "title": "台湾渔民说只有大陆海警保护我们"}, {"rank": 31, "title": "广德致1死2伤司机或3年以下刑期"}, {"rank": 32, "title": "马嘉祺宋亚轩同窗四年"}, {"rank": 33, "title": "马宁第3次执法来了"}, {"rank": 34, "title": "龚俊工作室富有但小气"}, {"rank": 35, "title": "张凌赫请开推吃水蜜桃"}, {"rank": 36, "title": "恋与深空的野心莫透支玩家信任"}, {"rank": 37, "title": "宋亚轩晒毕业照"}, {"rank": 38, "title": "林允撑伞神图有了"}, {"rank": 39, "title": "C罗母亲无声抗议"}, {"rank": 40, "title": "杨紫行程 真脚不着地了"}, {"rank": 41, "title": "比亚迪重走马可波罗之路"}, {"rank": 42, "title": "登陆少年空降"}, {"rank": 43, "title": "ENC大名单"}, {"rank": 44, "title": "马宁出任挪威vs法国第四官员"}, {"rank": 45, "title": "刘国梁女儿惊讶爸爸曾经这么帅"}, {"rank": 46, "title": "谢可寅演技"}, {"rank": 47, "title": "肖战白玉兰VCR"}, {"rank": 48, "title": "英伟达紧急辟谣"}, {"rank": 49, "title": "左航借口上厕所和学弟合照"}, {"rank": 50, "title": "新能源车保养别踩坑"}];
-const HOTWORDS_SRC = "实时微博热搜（2026-06-24）";
-document.getElementById("datasrc").textContent = HOTWORDS_SRC;
+const CAT_GROUNDING = __CAT_GROUNDING__;
+const HOTWORDS = __HOTWORDS__;
 const HOT = HOTWORDS.map(h=>h.title).join("、");
+// 按热度排序品类
+const CATS = Object.entries(CAT_GROUNDING).sort((a,b)=>b[1].heat-a[1].heat).map(x=>x[0]);
+let curCat = CATS.find(c=>c==="新能源车") || CATS[0];
 
-function getKey(){ return localStorage.getItem("glm_key") || ""; }
-function markSaved(){ document.getElementById("keySummary").innerHTML = '⚙️ 设置 API Key　<span class="ok">已保存 ✓</span>'; }
-function saveKey(){
-  const v = document.getElementById("key").value.trim();
-  if(!v) return;
-  localStorage.setItem("glm_key", v);
-  markSaved();
-  document.getElementById("keyDetails").open = false;
+function renderCats(){
+  const el=document.getElementById("cats");
+  el.innerHTML = CATS.map(c=>`<div class="cat ${c===curCat?'on':''}" onclick="pickCat('${c}')">
+    <span class="fire">🔥</span>${c}<span class="heat">热度${CAT_GROUNDING[c].heat}</span></div>`).join("");
 }
-window.addEventListener("load", ()=>{ if(getKey()) markSaved(); });
+function pickCat(c){ curCat=c; renderCats(); }
+
+function getKey(){ return localStorage.getItem("glm_key")||""; }
+function markSaved(){ document.getElementById("keySummary").innerHTML='⚙️ 设置 API Key　<span class="ok">已保存 ✓</span>'; }
+function saveKey(){ const v=document.getElementById("key").value.trim(); if(!v)return;
+  localStorage.setItem("glm_key",v); markSaved(); document.getElementById("keyDetails").open=false; }
+window.addEventListener("load",()=>{ renderCats(); if(getKey())markSaved(); });
 
 function buildPrompt(topic){
-  return `你是顶级微博运营，专做热搜话题词。用户主题：${topic}。
-若主题是品牌/产品/人物，结合它的真实卖点和背景来写。
+  const g=CAT_GROUNDING[curCat];
+  const hist=g.clean_words.map((w,i)=>`${i+1}. ${w}`).join("\n");
+  const pats=g.patterns.map(p=>`- ${p.name}：${p.proto}`).join("\n");
+  return `你是「${curCat}」品类的微博热搜话题词专家。任务：把下面【${curCat}品类真实历史打榜词】的上榜规律，迁移到用户的词「${topic}」上，生成6条候选话题词。
 
-今天微博真实在榜热词（只在真正相关时才蹭，多数和主题无关，不相关就老实写"无"，禁止硬蹭）：
+【${curCat}品类·真实上过热搜的历史词】（学它们的规律）：
+${hist}
+
+【该品类高频打榜套路】：
+${pats}
+
+【今日微博在榜热词】（仅在与「${topic}」或${curCat}真正相关时才蹭，不相关写"无"，禁止硬蹭）：
 ${HOT}
 
-生成6条更易上微博热搜的话题词，角度要多样（价格/技术/对比/人物/情绪/悬念/反差），像真人写的，口语化、有钩子、有冲突感。
-每条输出JSON对象，字段：
-- phrase: 话题词本身（简短有冲突感）
-- technique: 用的句式技巧（简短名词）
-- ride_hotword: 真正能蹭的今日热词，不相关就写"无"
-- reason: 为什么易传播，一句话
-只输出JSON数组，不要解释、不要markdown代码块。诚实，不承诺保证上榜。`;
+铁律：
+1. 每条必须填 based_on：参考了上面哪条真实历史词、学了它什么规律。based_on 引用的词必须来自上面的历史词列表。
+2. ride_hotword 只能从今日在榜热词里选且真相关，否则填"无"。
+3. 角度要多样（数据/对比/技术/事件/悬念/反差），不重复。不承诺保证上榜。
+
+只输出JSON数组，每条字段：phrase, technique, based_on, ride_hotword, reason。不要markdown代码块。`;
 }
 
 async function run(){
-  const topic = document.getElementById("topic").value.trim();
-  const out = document.getElementById("out");
-  const meta = document.getElementById("meta");
-  const btn = document.getElementById("gen");
+  const topic=document.getElementById("topic").value.trim();
+  const out=document.getElementById("out"), meta=document.getElementById("meta"), btn=document.getElementById("gen");
   if(!topic){ out.innerHTML=""; meta.style.display="none"; return; }
-  const key = getKey();
-  if(!key){
-    out.innerHTML = '<div class="card err">请先点上面「⚙️ 设置 API Key」填入你的智谱 key（免费，open.bigmodel.cn 领）。</div>';
-    document.getElementById("keyDetails").open = true;
-    return;
-  }
-  btn.disabled = true; btn.textContent = "AI 生成中…";
-  out.innerHTML = '<div class="card loading">AI 正在结合今日热词生成，约 5 秒…</div>';
-  meta.style.display = "none";
+  const key=getKey();
+  if(!key){ out.innerHTML='<div class="card err">请先点「⚙️ 设置 API Key」填入智谱 key（免费，open.bigmodel.cn 领）。</div>';
+    document.getElementById("keyDetails").open=true; return; }
+  btn.disabled=true; btn.textContent="AI 生成中…";
+  out.innerHTML='<div class="card loading">AI 正在基于'+curCat+'品类历史规律生成，约 6 秒…</div>'; meta.style.display="none";
   try{
-    const resp = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions",{
-      method:"POST",
-      headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},
-      body: JSON.stringify({model:"glm-4-flash",temperature:0.85,
-        messages:[{role:"user",content:buildPrompt(topic)}]})
-    });
-    if(!resp.ok){ throw new Error("接口 "+resp.status+"："+(await resp.text()).slice(0,160)); }
-    const data = await resp.json();
-    let content = (data.choices?.[0]?.message?.content||"").trim();
-    content = content.replace(/^```\w*/m,"").replace(/```$/m,"").trim();
-    const arr = JSON.parse(content);
+    const resp=await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions",{
+      method:"POST", headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},
+      body:JSON.stringify({model:"glm-4-flash",temperature:0.85,messages:[{role:"user",content:buildPrompt(topic)}]})});
+    if(!resp.ok) throw new Error("接口 "+resp.status+"："+(await resp.text()).slice(0,140));
+    const data=await resp.json();
+    let c=(data.choices?.[0]?.message?.content||"").trim().replace(/^```\w*/m,"").replace(/```$/m,"").trim();
+    const arr=JSON.parse(c);
     meta.style.display="block";
-    meta.textContent = `主题：${topic}　|　数据：${HOTWORDS_SRC}　|　模型：GLM-4-Flash`;
-    out.innerHTML = arr.map((r,i)=>`
-      <div class="card result">
-        <div class="phrase">${i+1}. ${r.phrase||""}</div>
-        <div class="row">句式技巧：<span class="tag">${r.technique||"-"}</span></div>
-        <div class="row">蹭的热词：${(r.ride_hotword&&r.ride_hotword!=="无")?'<span class="chip">'+r.ride_hotword+'</span>':"（今日无相关在榜热词）"}</div>
-        <div class="row" style="color:#86909c">理由：${r.reason||""}</div>
-        <div class="disclaimer">不保证上榜；受发布时机、账号权重、突发事件影响</div>
-      </div>`).join("");
-  }catch(e){
-    out.innerHTML = '<div class="card err">生成失败：'+(e.message||e)+'<br><br>常见：key 错误/额度用尽，或返回非JSON。可重试。</div>';
-  }finally{
-    btn.disabled=false; btn.textContent="AI 生成优化话题词";
-  }
+    meta.textContent=`品类：${curCat}（热度${CAT_GROUNDING[curCat].heat}）　|　词：${topic}　|　模型：GLM-4-Flash`;
+    out.innerHTML=arr.map((r,i)=>`<div class="card result">
+      <div class="phrase">${i+1}. ${r.phrase||""}</div>
+      <div class="row">句式：<span class="tag">${r.technique||"-"}</span></div>
+      <div class="row">依据：<span class="base">${r.based_on||"-"}</span></div>
+      <div class="row">蹭的热词：${(r.ride_hotword&&r.ride_hotword!=="无")?'<span class="chip">'+r.ride_hotword+'</span>':"（今日无相关在榜热词）"}</div>
+      <div class="row" style="color:#86909c">理由：${r.reason||""}</div>
+      <div class="disclaimer">不保证上榜；受发布时机、账号权重、突发事件影响</div></div>`).join("");
+  }catch(e){ out.innerHTML='<div class="card err">生成失败：'+(e.message||e)+'<br><br>常见：key 错误/额度用尽，或返回非JSON。可重试。</div>'; }
+  finally{ btn.disabled=false; btn.textContent="AI 生成打榜话题词"; }
 }
 </script>
 </body>
