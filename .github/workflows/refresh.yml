@@ -1,0 +1,26 @@
+name: refresh-grounding
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build grounding
+        env:
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+        run: python build_grounding.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add grounding.json
+          git commit -m "refresh grounding $(date -u +%F)" || echo "no change"
+          git push
