@@ -2,7 +2,8 @@
 # 每天由 GitHub Actions 跑: 拉最近历史微博热搜 -> 12品类候选 -> GLM洗净 -> grounding.json
 import json, re, os, datetime, urllib.request, concurrent.futures
 
-RAW = "https://raw.githubusercontent.com/iiecho1/hot_searches_for_apps/main/archives/%E5%BE%AE%E5%8D%9A"
+WEIBO  = "https://raw.githubusercontent.com/iiecho1/hot_searches_for_apps/main/archives/%E5%BE%AE%E5%8D%9A"
+DOUYIN = "https://raw.githubusercontent.com/iiecho1/hot_searches_for_apps/main/archives/%E6%8A%96%E9%9F%B3"
 KEY = os.environ["GLM_API_KEY"]
 
 CATS = {
@@ -26,17 +27,35 @@ def fetch(url):
     except Exception:
         return ""
 
-def pull_history(days=100):
+def day_urls(base, days):
     today = datetime.date.today()
-    urls = []
+    out = []
     for i in range(days):
         d = today - datetime.timedelta(days=i)
-        urls.append((d, f"{RAW}/{d.year}/{d.month:02d}/{d.year}-{d.month:02d}-{d.day:02d}.md"))
-    rows = []
+        out.append((d, f"{base}/{d.year}/{d.month:02d}/{d.year}-{d.month:02d}-{d.day:02d}.md"))
+    return out
+
+def pull_history(days=100):
+    rows = []  # (title, rank, date_str, platform)
+    # 微博: band_rank 在 url 里, 无则记 99
+    wb = day_urls(WEIBO, days)
     with concurrent.futures.ThreadPoolExecutor(max_workers=16) as ex:
-        for (d, _), txt in zip(urls, ex.map(lambda u: fetch(u[1]), urls)):
+        for (d, _), txt in zip(wb, ex.map(lambda u: fetch(u[1]), wb)):
             for m in re.finditer(r"\+\s*\[(.*?)\]\(.*?(?:band_rank=(\d+))?.*?\)", txt):
-                rows.append((m.group(1).strip(), int(m.group(2)) if m.group(2) else 99, str(d)))
+                rows.append((m.group(1).strip(), int(m.group(2)) if m.group(2) else 99, str(d), "微博"))
+    # 抖音: 无 band_rank, 文件内行序即排名(遇 # 头重置)
+    dy = day_urls(DOUYIN, days)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=16) as ex:
+        for (d, _), txt in zip(dy, ex.map(lambda u: fetch(u[1]), dy)):
+            rank = 0
+            for line in txt.splitlines():
+                if line.startswith("#"):
+                    rank = 0
+                    continue
+                m = re.match(r"\+\s*\[(.*?)\]\(", line)
+                if m:
+                    rank += 1
+                    rows.append((m.group(1).strip(), rank, str(d), "抖音"))
     return rows
 
 def glm(prompt, temp=0.3):
@@ -47,7 +66,7 @@ def glm(prompt, temp=0.3):
     return re.sub(r"^```\w*|```$", "", c, flags=re.M).strip()
 
 def clean(cat, seeds, candidates, heat):
-    p = (f'下面是"{cat}"品类的微博历史热搜词。只保留真正属于该品类、对内容营销选题有参考价值的词,剔除蹭字噪声。'
+    p = (f'下面是"{cat}"品类的微博+抖音历史热搜词。只保留真正属于该品类、对内容营销选题有参考价值的词,剔除蹭字噪声。'
          f'再总结3-4个"该品类容易打榜的句式套路"(简短名词+原型)。词条:{json.dumps(candidates, ensure_ascii=False)}'
          '只输出JSON: {"clean_words":[...最多16条...],"patterns":[{"name":"","proto":""}...]}')
     try:
@@ -63,11 +82,11 @@ def main():
     cands = {}
     for cat, seeds in CATS.items():
         best = {}
-        for t, rk, d in rows:
+        for t, rk, d, p in rows:
             if any(s in t for s in seeds):
                 if t not in best or rk < best[t]:
                     best[t] = rk
-        heat = len(set(t for (t, rk, d) in rows if d >= recent_cut and any(s in t for s in seeds)))
+        heat = len(set(t for (t, rk, d, p) in rows if d >= recent_cut and any(s in t for s in seeds)))
         cw = sorted(best.items(), key=lambda x: x[1])
         cands[cat] = (seeds, [w for w, _ in cw[:50]], heat)
     out = {}
