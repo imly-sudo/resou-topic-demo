@@ -41,8 +41,9 @@ def pull_history(days=100):
     wb = day_urls(WEIBO, days)
     with concurrent.futures.ThreadPoolExecutor(max_workers=16) as ex:
         for (d, _), txt in zip(wb, ex.map(lambda u: fetch(u[1]), wb)):
-            for m in re.finditer(r"\+\s*\[(.*?)\]\(.*?(?:band_rank=(\d+))?.*?\)", txt):
-                rows.append((m.group(1).strip(), int(m.group(2)) if m.group(2) else 99, str(d), "微博"))
+            for m in re.finditer(r"\+\s*\[(.*?)\]\(([^)]*)\)", txt):
+                bm = re.search(r"band_rank=(\d+)", m.group(2))
+                rows.append((m.group(1).strip(), int(bm.group(1)) if bm else 99, str(d), "微博"))
     # 抖音: 无 band_rank, 文件内行序即排名(遇 # 头重置)
     dy = day_urls(DOUYIN, days)
     with concurrent.futures.ThreadPoolExecutor(max_workers=16) as ex:
@@ -65,15 +66,31 @@ def glm(prompt, temp=0.3):
     c = json.loads(urllib.request.urlopen(r, timeout=80).read())["choices"][0]["message"]["content"].strip()
     return re.sub(r"^```\w*|```$", "", c, flags=re.M).strip()
 
-def clean(cat, seeds, candidates, heat):
+def src_of(word, srcs):
+    # 把(可能被GLM精简过的)清洗词映射回原始平台来源: 微博 / 抖音 / 双
+    if word in srcs:
+        s = srcs[word]
+    else:
+        s = set()
+        for t, ps in srcs.items():
+            if word and (word in t or t in word):
+                s |= ps
+    if not s:
+        return ""
+    return "双" if len(s) > 1 else next(iter(s))
+
+def clean(cat, seeds, candidates, heat, srcs):
     p = (f'下面是"{cat}"品类的微博+抖音历史热搜词。只保留真正属于该品类、对内容营销选题有参考价值的词,剔除蹭字噪声。'
          f'再总结3-4个"该品类容易打榜的句式套路"(简短名词+原型)。词条:{json.dumps(candidates, ensure_ascii=False)}'
          '只输出JSON: {"clean_words":[...最多16条...],"patterns":[{"name":"","proto":""}...]}')
     try:
         r = json.loads(glm(p))
-        return cat, {"heat":heat, "seeds":seeds, "clean_words":r.get("clean_words", [])[:16], "patterns":r.get("patterns", [])}
+        words = r.get("clean_words", [])[:16]
+        cw = [{"w": w, "src": src_of(w, srcs)} for w in words]
+        return cat, {"heat":heat, "seeds":seeds, "clean_words":cw, "patterns":r.get("patterns", [])}
     except Exception:
-        return cat, {"heat":heat, "seeds":seeds, "clean_words":candidates[:12], "patterns":[]}
+        cw = [{"w": w, "src": src_of(w, srcs)} for w in candidates[:12]]
+        return cat, {"heat":heat, "seeds":seeds, "clean_words":cw, "patterns":[]}
 
 def main():
     rows = pull_history()
@@ -81,17 +98,25 @@ def main():
     recent_cut = str(datetime.date.today() - datetime.timedelta(days=30))
     cands = {}
     for cat, seeds in CATS.items():
-        best = {}
+        srcs = {}; wb_rank = {}; dy_rank = {}
         for t, rk, d, p in rows:
             if any(s in t for s in seeds):
-                if t not in best or rk < best[t]:
-                    best[t] = rk
+                srcs.setdefault(t, set()).add(p)
+                tgt = wb_rank if p == "微博" else dy_rank
+                if t not in tgt or rk < tgt[t]:
+                    tgt[t] = rk
         heat = len(set(t for (t, rk, d, p) in rows if d >= recent_cut and any(s in t for s in seeds)))
-        cw = sorted(best.items(), key=lambda x: x[1])
-        cands[cat] = (seeds, [w for w, _ in cw[:50]], heat)
+        # 两平台各取 top 再合并去重, 保证抖音有代表性(否则微博快照多会淹没抖音)
+        wb_top = [w for w, _ in sorted(wb_rank.items(), key=lambda x: x[1])[:32]]
+        dy_top = [w for w, _ in sorted(dy_rank.items(), key=lambda x: x[1])[:22]]
+        seen = set(); words = []
+        for w in wb_top + dy_top:
+            if w not in seen:
+                seen.add(w); words.append(w)
+        cands[cat] = (seeds, words, heat, srcs)
     out = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:
-        futs = [ex.submit(clean, c, s, words, h) for c, (s, words, h) in cands.items()]
+        futs = [ex.submit(clean, c, s, words, h, sm) for c, (s, words, h, sm) in cands.items()]
         for f in concurrent.futures.as_completed(futs):
             c, v = f.result()
             out[c] = v
