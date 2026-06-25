@@ -80,19 +80,31 @@ def src_of(word, srcs):
     return "双" if len(s) > 1 else next(iter(s))
 
 def clean(cat, seeds, wb_words, dy_words, heat, srcs):
-    # 分微博/抖音两组各自清洗, 保证抖音不被微博淹没
-    p = (f'下面是"{cat}"品类的历史热搜词,分微博和抖音两组。每组只保留真正属于该品类、对内容营销选题有参考价值的词,剔除蹭字噪声。'
-         f'微博组保留最多11条,抖音组保留最多5条。再总结3-4个"该品类容易打榜的句式套路"(简短名词+原型)。'
+    # 分微博/抖音两组各自清洗 + 蒸馏命名"打榜公式"(带真实案例)
+    p = (f'下面是"{cat}"品类真实上过热搜的词,分微博和抖音两组。做两件事:\n'
+         f'1) 每组只保留真正属于该品类、对选题有参考价值的词,剔噪声。微博≤11,抖音≤5。\n'
+         f'2) 从这些词归纳5-7个"打榜公式"(该品类容易上热搜的套路)。每个公式给: name(4-8字好记的名字,如"价格直给"), '
+         f'template(一句话模板,讲清这套路怎么造词), examples(2-3个,必须从上面给的词里原样挑,不许编)。\n'
          f'微博词:{json.dumps(wb_words, ensure_ascii=False)} 抖音词:{json.dumps(dy_words, ensure_ascii=False)} '
-         '只输出JSON: {"weibo":[...],"douyin":[...],"patterns":[{"name":"","proto":""}]}')
+         '只输出JSON: {"weibo":[...],"douyin":[...],"formulas":[{"name":"","template":"","examples":["",""]}]}')
     try:
         r = json.loads(glm(p))
         cw = [{"w": w, "src": src_of(w, srcs)} for w in r.get("weibo", [])[:11]] \
            + [{"w": w, "src": src_of(w, srcs)} for w in r.get("douyin", [])[:5]]
-        return cat, {"heat":heat, "seeds":seeds, "clean_words":cw, "patterns":r.get("patterns", [])}
+        formulas = []
+        for f in (r.get("formulas") or [])[:7]:
+            name = (f.get("name") or "").strip()
+            exs = []
+            for w in (f.get("examples") or [])[:3]:
+                w = (w or "").strip(); s = src_of(w, srcs)
+                if w and s:  # 只留能映射回真实上榜词的案例, 编的丢掉
+                    exs.append({"w": w, "src": s})
+            if name and exs:
+                formulas.append({"name": name[:12], "template": (f.get("template") or "").strip()[:40], "examples": exs})
+        return cat, {"heat":heat, "seeds":seeds, "clean_words":cw, "formulas":formulas}
     except Exception:
         cw = [{"w": w, "src": src_of(w, srcs)} for w in (wb_words[:9] + dy_words[:5])]
-        return cat, {"heat":heat, "seeds":seeds, "clean_words":cw, "patterns":[]}
+        return cat, {"heat":heat, "seeds":seeds, "clean_words":cw, "formulas":[]}
 
 def main():
     rows = pull_history()
