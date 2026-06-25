@@ -79,17 +79,19 @@ def src_of(word, srcs):
         return ""
     return "双" if len(s) > 1 else next(iter(s))
 
-def clean(cat, seeds, candidates, heat, srcs):
-    p = (f'下面是"{cat}"品类的微博+抖音历史热搜词。只保留真正属于该品类、对内容营销选题有参考价值的词,剔除蹭字噪声。'
-         f'再总结3-4个"该品类容易打榜的句式套路"(简短名词+原型)。词条:{json.dumps(candidates, ensure_ascii=False)}'
-         '只输出JSON: {"clean_words":[...最多16条...],"patterns":[{"name":"","proto":""}...]}')
+def clean(cat, seeds, wb_words, dy_words, heat, srcs):
+    # 分微博/抖音两组各自清洗, 保证抖音不被微博淹没
+    p = (f'下面是"{cat}"品类的历史热搜词,分微博和抖音两组。每组只保留真正属于该品类、对内容营销选题有参考价值的词,剔除蹭字噪声。'
+         f'微博组保留最多11条,抖音组保留最多5条。再总结3-4个"该品类容易打榜的句式套路"(简短名词+原型)。'
+         f'微博词:{json.dumps(wb_words, ensure_ascii=False)} 抖音词:{json.dumps(dy_words, ensure_ascii=False)} '
+         '只输出JSON: {"weibo":[...],"douyin":[...],"patterns":[{"name":"","proto":""}]}')
     try:
         r = json.loads(glm(p))
-        words = r.get("clean_words", [])[:16]
-        cw = [{"w": w, "src": src_of(w, srcs)} for w in words]
+        cw = [{"w": w, "src": src_of(w, srcs)} for w in r.get("weibo", [])[:11]] \
+           + [{"w": w, "src": src_of(w, srcs)} for w in r.get("douyin", [])[:5]]
         return cat, {"heat":heat, "seeds":seeds, "clean_words":cw, "patterns":r.get("patterns", [])}
     except Exception:
-        cw = [{"w": w, "src": src_of(w, srcs)} for w in candidates[:12]]
+        cw = [{"w": w, "src": src_of(w, srcs)} for w in (wb_words[:9] + dy_words[:5])]
         return cat, {"heat":heat, "seeds":seeds, "clean_words":cw, "patterns":[]}
 
 def main():
@@ -106,17 +108,13 @@ def main():
                 if t not in tgt or rk < tgt[t]:
                     tgt[t] = rk
         heat = len(set(t for (t, rk, d, p) in rows if d >= recent_cut and any(s in t for s in seeds)))
-        # 两平台各取 top 再合并去重, 保证抖音有代表性(否则微博快照多会淹没抖音)
-        wb_top = [w for w, _ in sorted(wb_rank.items(), key=lambda x: x[1])[:32]]
-        dy_top = [w for w, _ in sorted(dy_rank.items(), key=lambda x: x[1])[:22]]
-        seen = set(); words = []
-        for w in wb_top + dy_top:
-            if w not in seen:
-                seen.add(w); words.append(w)
-        cands[cat] = (seeds, words, heat, srcs)
+        # 两平台各取 top 分别送清洗(微博快照多会淹没抖音, 必须分组)
+        wb_top = [w for w, _ in sorted(wb_rank.items(), key=lambda x: x[1])[:30]]
+        dy_top = [w for w, _ in sorted(dy_rank.items(), key=lambda x: x[1])[:18]]
+        cands[cat] = (seeds, wb_top, dy_top, heat, srcs)
     out = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:
-        futs = [ex.submit(clean, c, s, words, h, sm) for c, (s, words, h, sm) in cands.items()]
+        futs = [ex.submit(clean, c, s, wb, dy, h, sm) for c, (s, wb, dy, h, sm) in cands.items()]
         for f in concurrent.futures.as_completed(futs):
             c, v = f.result()
             out[c] = v
