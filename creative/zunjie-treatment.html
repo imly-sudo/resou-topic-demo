@@ -1,0 +1,1034 @@
+<title>尊界《钻戒》</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@500;700;900&display=swap">
+
+<style>
+/* ── tokens ─────────────────────────────────────────────────────────────
+   Dark-first: the film is shot in pure black with one cold key light.
+   The accent is "diamond fire" — the blue-white spectral flash a stone
+   throws when it catches light. One light, two readings.            */
+
+:root{
+  --ground:#08090B; --surface:#101216; --surface-2:#16191F;
+  --line:#232830;   --line-soft:#1A1E25;
+  --ink:#EDEFF3;    --ink-dim:#8C919C; --ink-faint:#7A808C;
+  --fire:#7FE3F0;   --fire-mid:#5AB0C2; --fire-deep:#3C7885;
+  --fire-wash:rgba(127,227,240,.07);
+  --blade:#FFFFFF;
+  --shadow:0 1px 0 rgba(255,255,255,.04);
+}
+:root[data-theme="light"]{
+  --ground:#F4F6F7; --surface:#FFFFFF; --surface-2:#EDF1F2;
+  --line:#DCE3E5;   --line-soft:#E7ECEE;
+  --ink:#0B0D10;    --ink-dim:#5A6068; --ink-faint:#656B73;
+  --fire:#0B5F6C;   --fire-mid:#2F7A8C; --fire-deep:#4694A5;
+  --fire-wash:rgba(11,95,108,.06);
+  --blade:#0B5F6C;
+  --shadow:0 1px 2px rgba(11,13,16,.06);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --ground:#F4F6F7; --surface:#FFFFFF; --surface-2:#EDF1F2;
+    --line:#DCE3E5;   --line-soft:#E7ECEE;
+    --ink:#0B0D10;    --ink-dim:#5A6068; --ink-faint:#656B73;
+    --fire:#0B5F6C;   --fire-mid:#2F7A8C; --fire-deep:#4694A5;
+    --fire-wash:rgba(11,95,108,.06);
+    --blade:#0B5F6C;
+    --shadow:0 1px 2px rgba(11,13,16,.06);
+  }
+}
+
+*{box-sizing:border-box}
+
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-weight:300;
+  line-height:1.75;
+  font-size:15.5px;
+  margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{max-width:760px;margin:0 auto;padding:0 28px}
+
+/* ── type scale ─────────────────────────────────────────────────────── */
+.serif{font-family:"Noto Serif SC",Georgia,"Songti SC","SimSun",serif}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+
+h2{
+  font-family:"Noto Serif SC",Georgia,"Songti SC",serif;
+  font-weight:700; font-size:26px; line-height:1.35;
+  margin:0; text-wrap:balance; letter-spacing:.01em;
+}
+h3{
+  font-weight:500; font-size:16px; line-height:1.5;
+  margin:0; color:var(--ink); text-wrap:balance;
+}
+p{margin:0}
+
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--fire); font-weight:500;
+}
+.dim{color:var(--ink-dim)}
+.faint{color:var(--ink-faint)}
+
+/* ── section rhythm ─────────────────────────────────────────────────── */
+section{padding:64px 0; border-top:1px solid var(--line-soft)}
+section > .wrap{display:flex; flex-direction:column; gap:26px}
+.sec-head{display:flex; flex-direction:column; gap:10px}
+.stack{display:flex; flex-direction:column; gap:14px}
+.stack-lg{display:flex; flex-direction:column; gap:24px}
+
+/* ── HERO ───────────────────────────────────────────────────────────── */
+.hero{
+  padding:104px 0 76px; border-top:none;
+  background:
+    radial-gradient(120% 68% at 50% -12%, var(--fire-wash) 0%, transparent 62%);
+}
+.hero > .wrap{gap:34px}
+
+.brandline{
+  display:flex; align-items:center; gap:14px;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--ink-faint);
+}
+.brandline .rule{flex:1; height:1px; background:var(--line)}
+
+/* the line performs the gag: it never resolves which word it is */
+.utterance{
+  font-family:"Noto Serif SC",Georgia,"Songti SC",serif;
+  font-weight:900;
+  font-size:clamp(30px,7.4vw,52px);
+  line-height:1.28;
+  letter-spacing:.015em;
+  margin:0;
+}
+.swap{
+  position:relative; display:inline-block;
+  vertical-align:baseline;
+}
+/* keep the reading and its closing punctuation as one unit so the
+   period never orphans onto a line of its own (it doubles in width
+   when reduced-motion shows both readings side by side) */
+.nb{white-space:nowrap}
+.swap b{font-weight:900}
+.swap .a{visibility:hidden}                     /* sizer: holds the box */
+.swap .lyr{
+  position:absolute; inset:0; white-space:nowrap;
+  text-shadow:0 0 26px var(--fire-wash);
+}
+.swap .l1{animation:xf1 5.2s ease-in-out infinite}
+.swap .l2{animation:xf2 5.2s ease-in-out infinite; color:var(--fire)}
+@keyframes xf1{0%,38%{opacity:1}50%,88%{opacity:0}100%{opacity:1}}
+@keyframes xf2{0%,38%{opacity:0}50%,88%{opacity:1}100%{opacity:0}}
+
+.pinyin{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:13px; letter-spacing:.09em; color:var(--ink-dim);
+  display:flex; gap:10px; align-items:baseline; margin-top:14px;
+}
+.pinyin .swapy{position:relative; display:inline-block}
+.pinyin .a{visibility:hidden}
+.pinyin .lyr{position:absolute; inset:0; white-space:nowrap}
+.pinyin .l1{animation:xf1 5.2s ease-in-out infinite}
+.pinyin .l2{animation:xf2 5.2s ease-in-out infinite; color:var(--fire)}
+
+/* extra air so the pinyin reads as a caption on the headline above,
+   not as the first line of the paragraph below */
+.thesis{font-size:16.5px; line-height:1.85; color:var(--ink-dim); max-width:60ch; margin-top:12px}
+.thesis em{color:var(--ink); font-style:normal; font-weight:400}
+
+.meta{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+  background:var(--line-soft); border:1px solid var(--line-soft);
+}
+.meta div{background:var(--ground); padding:15px 4px 14px; text-align:center}
+.meta .v{
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:21px; color:var(--ink); font-weight:500; line-height:1.2;
+}
+.meta .k{font-size:10.5px; color:var(--ink-faint); letter-spacing:.06em; margin-top:5px}
+
+/* ── generic blocks ─────────────────────────────────────────────────── */
+.card{
+  background:var(--surface); border:1px solid var(--line);
+  padding:22px 24px; box-shadow:var(--shadow);
+}
+.note{
+  border-left:2px solid var(--fire);
+  background:var(--fire-wash);
+  padding:16px 20px; font-size:14.5px; line-height:1.8;
+}
+.note strong{font-weight:500; color:var(--ink)}
+
+.gate{
+  border:1px solid var(--fire-deep);
+  background:var(--surface);
+  padding:20px 24px;
+}
+.gate .eyebrow{display:block; margin-bottom:10px}
+
+/* ── phonetics ──────────────────────────────────────────────────────── */
+.phon{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line)}
+.phon > div{background:var(--surface); padding:20px 22px; display:flex; flex-direction:column; gap:7px}
+.phon .w{font-family:"Noto Serif SC",serif; font-weight:700; font-size:27px; line-height:1.2}
+.phon .p{font-family:"IBM Plex Mono",monospace; font-size:15px; color:var(--ink-dim); letter-spacing:.05em}
+.phon .p mark{background:none; color:var(--fire); font-weight:500}
+.phon .n{font-size:12.5px; color:var(--ink-faint); line-height:1.65}
+
+/* ── ordered measures ───────────────────────────────────────────────── */
+.measures{display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line)}
+.measures li{
+  background:var(--surface); padding:15px 20px;
+  display:grid; grid-template-columns:26px 1fr; gap:14px; align-items:start;
+}
+.measures{list-style:none; margin:0; padding:0; counter-reset:m}
+.measures li::before{
+  counter-increment:m; content:counter(m);
+  font-family:"IBM Plex Mono",monospace; font-size:12px;
+  color:var(--fire); padding-top:3px;
+}
+.measures h3{font-size:14.5px; margin-bottom:3px}
+.measures p{font-size:13.5px; color:var(--ink-dim); line-height:1.7}
+
+/* ── TIMELINE spine ─────────────────────────────────────────────────── */
+.scene-tag{
+  display:flex; align-items:baseline; gap:12px;
+  font-family:"IBM Plex Mono",monospace; font-size:11px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint);
+  padding-bottom:10px; border-bottom:1px solid var(--line);
+}
+.scene-tag b{color:var(--fire); font-weight:500}
+.scene-tag .t{margin-left:auto; letter-spacing:.04em}
+
+.beats{list-style:none; margin:0; padding:0; display:flex; flex-direction:column}
+.beats li{
+  display:grid; grid-template-columns:74px 1fr; gap:20px;
+  padding:18px 0; border-bottom:1px solid var(--line-soft);
+}
+.beats .tc{
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:12px; color:var(--fire-mid); padding-top:3px; letter-spacing:-.01em;
+}
+.beats .body{display:flex; flex-direction:column; gap:9px}
+.beats .pic{font-size:14.5px; line-height:1.8; color:var(--ink)}
+.beats .snd{
+  font-size:13px; line-height:1.75; color:var(--ink-dim);
+  padding-left:13px; border-left:1px solid var(--line);
+}
+.beats .snd .lbl{
+  font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint);
+  display:block; margin-bottom:3px;
+}
+.beats .snd q{quotes:none; color:var(--ink); font-weight:400}
+
+/* ── the match cut: the one full-bleed moment ───────────────────────── */
+.cut{
+  position:relative; margin:0; padding:0;
+  border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft);
+  background:var(--surface);
+  overflow:hidden;
+}
+.cut-stage{
+  position:relative; height:190px;
+  display:grid; grid-template-columns:1fr 1fr;
+}
+.cut-half{position:relative; overflow:hidden}
+.cut-half .cap{
+  position:absolute; bottom:16px; font-family:"IBM Plex Mono",monospace;
+  font-size:10px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--ink-faint);
+}
+.cut-l{background:radial-gradient(85% 130% at 92% 50%, var(--surface-2) 0%, var(--surface) 70%)}
+.cut-r{background:radial-gradient(85% 130% at 8% 50%, var(--surface-2) 0%, var(--surface) 70%)}
+.cut-l .cap{left:24px}
+.cut-r .cap{right:24px}
+
+/* the blade of light that crosses the seam — the whole cut in one object */
+.blade{
+  position:absolute; left:50%; top:0; bottom:0; width:2px;
+  transform:translateX(-1px);
+  background:linear-gradient(to bottom, transparent 0%, var(--blade) 22%, var(--blade) 78%, transparent 100%);
+  box-shadow:0 0 24px 5px var(--fire-wash), 0 0 60px 14px var(--fire-wash);
+}
+.cut-meta{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+  background:var(--line); border-top:1px solid var(--line);
+}
+.cut-meta > div{background:var(--surface); padding:16px 20px}
+.cut-meta .k{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--fire); display:block; margin-bottom:5px;
+}
+.cut-meta .d{font-size:13px; color:var(--ink-dim); line-height:1.65}
+.cut-label{
+  position:absolute; top:16px; left:50%; transform:translateX(-50%);
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.2em;
+  color:var(--ink); background:var(--surface);
+  padding:4px 12px; border:1px solid var(--line); white-space:nowrap; z-index:2;
+}
+
+/* ── script ─────────────────────────────────────────────────────────── */
+.script{display:flex; flex-direction:column; gap:20px}
+.line{display:grid; grid-template-columns:64px 1fr; gap:18px; align-items:baseline}
+.line .who{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.1em;
+  color:var(--ink-faint); text-align:right; padding-top:6px;
+}
+.line .say{
+  font-family:"Noto Serif SC",serif; font-weight:500;
+  font-size:clamp(19px,3.6vw,25px); line-height:1.6;
+}
+.line .dir{font-size:12.5px; color:var(--ink-faint); margin-top:5px; line-height:1.7}
+.mask{
+  color:var(--fire); position:relative;
+  border-bottom:2px solid var(--fire); padding-bottom:1px;
+}
+
+/* ── tables ─────────────────────────────────────────────────────────── */
+.tbl-scroll{overflow-x:auto; border:1px solid var(--line)}
+table{border-collapse:collapse; width:100%; min-width:480px; font-size:13.5px}
+th,td{text-align:left; padding:12px 16px; border-bottom:1px solid var(--line-soft); vertical-align:top; line-height:1.7}
+th{
+  font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:10px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint);
+  background:var(--surface-2); border-bottom:1px solid var(--line); white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none}
+td strong{font-weight:500; color:var(--ink)}
+td.n{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
+
+/* ── prompts ────────────────────────────────────────────────────────── */
+.prompt{border:1px solid var(--line); background:var(--surface)}
+.prompt > header{
+  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  padding:13px 18px; border-bottom:1px solid var(--line); background:var(--surface-2);
+}
+.prompt > header .id{
+  font-family:"IBM Plex Mono",monospace; font-size:11px;
+  letter-spacing:.1em; color:var(--fire); font-weight:500;
+}
+.prompt > header .ds{font-size:12.5px; color:var(--ink-dim)}
+.prompt pre{
+  margin:0; padding:18px; overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace; font-size:12px; line-height:1.85;
+  color:var(--ink); white-space:pre-wrap; word-break:break-word;
+}
+.prompt .zh{
+  padding:13px 18px; border-top:1px solid var(--line-soft);
+  font-size:12.5px; color:var(--ink-dim); line-height:1.75; background:var(--surface-2);
+}
+
+/* ── end cards ──────────────────────────────────────────────────────── */
+.ends{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+.end{border:1px solid var(--line); background:var(--surface); display:flex; flex-direction:column}
+.end .plate{
+  background:var(--ground); border-bottom:1px solid var(--line);
+  min-height:104px; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:5px; padding:18px 12px; text-align:center;
+}
+.end .bn{
+  font-family:"Noto Serif SC",serif; font-weight:700; font-size:17px;
+  letter-spacing:.1em; color:var(--ink);
+}
+.end .bl{
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px;
+  letter-spacing:.3em; color:var(--ink-faint);
+}
+.end .pr{
+  font-family:"IBM Plex Mono",monospace; font-size:12.5px;
+  color:var(--fire); letter-spacing:.04em;
+}
+.end .txt{padding:14px 16px; display:flex; flex-direction:column; gap:6px}
+.end .nm{font-size:13.5px; font-weight:400; color:var(--ink)}
+.end .ds{font-size:12px; color:var(--ink-dim); line-height:1.7}
+
+/* ── chart ──────────────────────────────────────────────────────────── */
+.chart{display:flex; flex-direction:column; gap:2px}
+.row{
+  display:grid; grid-template-columns:78px 1fr 46px; gap:12px;
+  align-items:center; padding:3px 6px; margin:0 -6px;
+}
+.row:hover{background:var(--fire-wash)}
+.row .cat{font-size:12.5px; color:var(--ink-dim); text-align:right; white-space:nowrap}
+.row .track{height:12px; display:flex; align-items:center; gap:10px; min-width:0}
+.row .bar{
+  height:10px; background:var(--fire-deep);
+  border-radius:0 4px 4px 0; flex:none;
+}
+.row .val{
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:12px; color:var(--ink-dim); text-align:right;
+}
+.row.on .cat{color:var(--ink); font-weight:400}
+.row.on .bar{background:var(--fire)}
+.row.on .val{color:var(--ink)}
+.row .tag{
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.12em;
+  color:var(--fire); white-space:nowrap; line-height:1; flex:none;
+}
+.chart-cap{font-size:12px; color:var(--ink-faint); line-height:1.7; margin-top:6px}
+
+/* ── checklist ──────────────────────────────────────────────────────── */
+.checks{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
+.check{border:1px solid var(--line); background:var(--surface); padding:18px 20px}
+.check .eyebrow{display:block; margin-bottom:12px}
+.check ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px}
+.check li{
+  display:grid; grid-template-columns:15px 1fr; gap:10px;
+  font-size:13px; line-height:1.65; color:var(--ink-dim);
+}
+.check li::before{
+  content:""; width:10px; height:10px; margin-top:5px;
+  border:1px solid var(--fire-deep);
+}
+.check li.stop{color:var(--ink)}
+.check li.stop::before{border-color:var(--fire); background:var(--fire-wash)}
+
+/* ── footer ─────────────────────────────────────────────────────────── */
+footer{padding:44px 0 60px; border-top:1px solid var(--line-soft)}
+footer .wrap{display:flex; flex-direction:column; gap:8px}
+footer p{font-size:12px; color:var(--ink-faint); line-height:1.75}
+
+/* ── responsive ─────────────────────────────────────────────────────── */
+@media (max-width:680px){
+  .meta{grid-template-columns:repeat(2,1fr)}
+  .phon,.ends,.checks,.cut-meta{grid-template-columns:1fr}
+  .beats li{grid-template-columns:1fr; gap:8px}
+  .beats .tc{padding-top:0}
+  .line{grid-template-columns:1fr; gap:4px}
+  .line .who{text-align:left; padding-top:0}
+  .row{grid-template-columns:66px 1fr 42px; gap:9px}
+  .cut-stage{height:150px}
+  section{padding:52px 0}
+  .hero{padding:76px 0 60px}
+}
+
+/* No motion: don't drop a reading — show both, which is the actual content. */
+@media (prefers-reduced-motion: reduce){
+  .swap .lyr,.pinyin .lyr{position:static; opacity:1; animation:none}
+  .swap .a,.pinyin .a{display:none}
+  .swap .l2::before,.pinyin .l2::before{content:" / "; color:var(--ink-faint)}
+}
+
+:focus-visible{outline:2px solid var(--fire); outline-offset:3px}
+</style>
+
+
+<header class="hero">
+  <div class="wrap">
+
+    <div class="brandline">
+      <span>尊界 · MAEXTRO</span>
+      <span class="rule"></span>
+      <span>AI 短片广告 · 创意方案</span>
+    </div>
+
+    <div>
+      <p class="utterance">这次…我想给你买<span class="nb"><span class="swap"><b class="a">钻戒</b><b
+        class="lyr l1">钻戒</b><b class="lyr l2">尊界</b></span>。</span></p>
+
+      <div class="pinyin">
+        <span class="faint">发音</span>
+        <span class="swapy"><span class="a">zuàn jiè</span><span
+          class="lyr l1">zuàn jiè</span><span class="lyr l2">zūn&nbsp; jiè</span></span>
+      </div>
+    </div>
+
+    <p class="thesis">一支拍法完全按 Cartier 规格走的求婚广告，在第 3.4 秒用一个<em>开盖动作</em>的匹配剪辑，把戒指盒变成尊界 S800 的车门。镜头后拉——车就停在那块黑丝绒上，嵌在珠宝展柜的凹槽里。他说的是「买钻戒」，她听成「买尊界」，他没纠正，只回了一声「嗯」。<br><br>全片不解释谐音。<em>解释的工作交给评论区。</em></p>
+
+    <div class="meta">
+      <div><div class="v">8.0<span style="font-size:13px">s</span></div><div class="k">总时长</div></div>
+      <div><div class="v">2</div><div class="k">场景</div></div>
+      <div><div class="v">1</div><div class="k">剪辑点</div></div>
+      <div><div class="v">14</div><div class="k">台词字数</div></div>
+    </div>
+
+  </div>
+</header>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">核心机制</span>
+      <h2>双读设计</h2>
+      <p class="dim">这条片子只有一个真正的技术难点：「钻戒」和「尊界」并不是完美同音。</p>
+    </div>
+
+    <div class="phon">
+      <div>
+        <span class="w serif">钻戒</span>
+        <span class="p"><mark>zuàn</mark> jiè</span>
+        <span class="n">4 声 + 4 声。有 -u- 介音，主元音 a 饱满。</span>
+      </div>
+      <div>
+        <span class="w serif">尊界</span>
+        <span class="p"><mark>zūn</mark> jiè</span>
+        <span class="n">1 声 + 4 声，无 a。差别全在第一个字。</span>
+      </div>
+    </div>
+
+    <p>如果录音把「钻」念得字正腔圆，观众第一遍就听得清清楚楚，反转直接失效——这是这个创意唯一的死法。所以整条片子围绕一个原则设计：</p>
+
+    <div class="note">
+      <strong>只录一条音轨，让它同时支持两种解读。由画面来决定观众听见哪一个。</strong><br>
+      第一遍看，前 3 秒全是钻石、丝绒、戒指盒，听觉预期被画面锁定，听成「钻戒」。第二遍看，观众已经知道结局，同一条音轨，听成「尊界」。
+    </div>
+
+    <p class="dim" style="font-size:14px">这不是玄学，是<strong style="color:var(--ink);font-weight:400">音位修复（phonemic restoration）</strong>：人耳在语音被噪声部分掩蔽时，会用语境自动补全缺失的音素，并且主观上确信「我听清楚了」。我们要做的，就是把「钻」这个字精准地藏进一个瞬态噪声里。</p>
+
+    <ol class="measures">
+      <li>
+        <div>
+          <h3>瞬态掩蔽</h3>
+          <p>「钻」字落点上叠一个瞬态声：香槟塞「啵」的一声 / 钢琴低音重音 / 丝绒盒的「咔哒」。掩蔽声与「钻」字同帧对齐，误差不超过 1 帧。</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>弱化首字</h3>
+          <p>台词重音落在「戒 / 界」上。「钻 / 尊」念短、念轻、带气声，元音 a 压到最短。</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>通道劣化</h3>
+          <p>贴耳气声（近讲效应：低频重、高频滚降），或隔一段距离说。高频信息越少，越容易被听成两种。</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>语境牵引</h3>
+          <p>前 3 秒画面 100% 珠宝语汇。一个车的元素都不能提前泄露。</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="gate">
+      <span class="eyebrow">验收卡点 · 不通过不许进剪辑</span>
+      <div class="stack">
+        <p style="font-size:14px">拿录好的音轨做两组盲测，每组 10 人以上、互不重叠：</p>
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr><th>组</th><th>条件</th><th>合格线</th></tr></thead>
+            <tbody>
+              <tr><td class="n"><strong>A</strong></td><td>只听音频，不给画面</td><td>两种答案<strong>都有人选</strong>——音轨本身必须是模糊的</td></tr>
+              <tr><td class="n"><strong>B</strong></td><td>配前 3 秒珠宝画面</td><td><strong>≥ 80%</strong> 听成「钻戒」——画面牵引成功</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:13.5px" class="dim">如果 A 组一边倒——不管倒向哪边——回去重录。<strong style="color:var(--ink);font-weight:400">A 组的分歧就是这条广告的生命线。</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">分镜 · 8.0 秒</span>
+      <h2>时间轴</h2>
+      <p class="dim">9:16 竖版为主投放版本，同步出 16:9。全片无人脸、无口型，所有台词后期配音——这一条同时解决了 AI 视频最大的短板，也保住了高奢广告的克制感。</p>
+    </div>
+
+    <div class="stack">
+      <div class="scene-tag"><b>SC01</b><span>珠宝语汇</span><span class="t">0.0 – 3.4s</span></div>
+      <ul class="beats">
+        <li>
+          <span class="tc">0.0 – 0.8</span>
+          <div class="body">
+            <span class="pic">纯黑。画面中央一点极小的高光缓慢呼吸。黑丝绒的纹理从暗部浮出。</span>
+            <span class="snd"><span class="lbl">声音</span>极低的房间底噪。一个钢琴单音，远，带长混响。</span>
+          </div>
+        </li>
+        <li>
+          <span class="tc">0.8 – 2.6</span>
+          <div class="body">
+            <span class="pic">极特写微距。黑丝绒上一只手，只到腕部，无脸。硬质单点侧光，光斑窄而利。一只丝绒戒指盒。镜头极缓推进。</span>
+            <span class="snd"><span class="lbl">声音</span>丝绒摩擦的细微质感声。<br>男声（贴耳气声）：<q>这次…我想给你买钻戒。</q><br><span class="faint">↑「钻」字落点叠掩蔽瞬态</span></span>
+          </div>
+        </li>
+        <li>
+          <span class="tc">2.6 – 3.4</span>
+          <div class="body">
+            <span class="pic">盒盖开始掀起。缝隙里射出一道锐利的白光，随开合角度逐渐变宽。</span>
+            <span class="snd"><span class="lbl">声音</span>盒盖的「咔哒」。钢琴音的尾巴还没散。</span>
+          </div>
+        </li>
+      </ul>
+      <div class="note" style="font-size:13.5px">这 3.4 秒必须让人 <strong>100% 相信这是珠宝片</strong>。任何一个车的元素提前出现，整条片子就废了。</div>
+    </div>
+  </div>
+</section>
+
+
+<div class="cut">
+  <div class="cut-stage">
+    <span class="cut-label">MATCH CUT · 3.4s</span>
+    <div class="cut-half cut-l"><span class="cap">盒盖掀起</span></div>
+    <div class="cut-half cut-r"><span class="cap">车门升起</span></div>
+    <span class="blade"></span>
+  </div>
+  <div class="cut-meta">
+    <div><span class="k">动作</span><span class="d">掀起的角速度前后一致</span></div>
+    <div><span class="k">光</span><span class="d">光缝的宽度、角度、色温连续</span></div>
+    <div><span class="k">构图</span><span class="d">光缝在画面中的位置不动</span></div>
+  </div>
+  <div class="wrap" style="padding-top:20px;padding-bottom:22px">
+    <p class="dim" style="font-size:13.5px">三要素缺一不可。做到了，观众意识不到这里剪过——他们只会觉得东西<strong style="color:var(--ink);font-weight:400">变大了</strong>。</p>
+  </div>
+</div>
+
+
+<section style="border-top:none">
+  <div class="wrap">
+    <div class="stack">
+      <div class="scene-tag"><b>SC02</b><span>尺度反转</span><span class="t">3.4 – 8.0s</span></div>
+      <ul class="beats">
+        <li>
+          <span class="tc">3.4 – 5.0</span>
+          <div class="body">
+            <span class="pic">同样的掀起动作、同样一道光缝——但这次是尊界 S800 的车门在同一个黑色空间里升起。同样的硬质单点光。镜头开始后拉。</span>
+            <span class="snd"><span class="lbl">声音</span>一个极低频的机械感（车门电机），处理成和盒盖「咔哒」同源的质感。</span>
+          </div>
+        </li>
+        <li>
+          <span class="tc">5.0 – 7.0</span>
+          <div class="body">
+            <span class="pic">镜头持续后拉，露出全貌：车停在<strong style="font-weight:400;color:var(--fire)">同一块黑丝绒</strong>上，嵌在一个珠宝展柜的凹槽里。完全是戒指盒的画面逻辑，但尺度是 5.5 米。展柜的比例、丝绒的褶皱走向、射灯的角度，全部照抄 SC01。</span>
+            <span class="snd"><span class="lbl">声音</span>女声（轻，不确定，半问句）：<q>尊界？</q></span>
+          </div>
+        </li>
+        <li>
+          <span class="tc">7.0 – 7.6</span>
+          <div class="body">
+            <span class="pic">车灯点亮——晶体大灯像钻石吃到光那样炸开一次，光斑形状与 SC01 里钻石的火彩同构。</span>
+            <span class="snd"><span class="lbl">声音</span>男声（停半拍，极淡的一声）：<q>……嗯。</q></span>
+          </div>
+        </li>
+        <li>
+          <span class="tc">7.6 – 8.0</span>
+          <div class="body">
+            <span class="pic">落版。</span>
+            <span class="snd"><span class="lbl">声音</span>一个收尾的低频。</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">台词全文 · 14 字</span>
+      <h2>不要再加一个字</h2>
+      <p class="dim">任何一句补充说明，都是在替观众做他们自己愿意做的事。</p>
+    </div>
+
+    <div class="card script">
+      <div class="line">
+        <span class="who">男</span>
+        <div>
+          <div class="say">这次…我想给你买<span class="mask">钻</span>戒。</div>
+          <div class="dir">贴耳气声。重音落在「戒」。掩蔽瞬态对齐高亮字。</div>
+        </div>
+      </div>
+      <div class="line">
+        <span class="who">女</span>
+        <div>
+          <div class="say">尊界？</div>
+          <div class="dir">不能演。是「啊？你说什么」的真实迟疑，不是惊喜——惊喜会毁掉反转，观众需要她也没搞清楚。</div>
+        </div>
+      </div>
+      <div class="line">
+        <span class="who">男</span>
+        <div>
+          <div class="say">……嗯。</div>
+          <div class="dir">停半拍，极淡。全片唯一的表演。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>关于那声「嗯」。</strong> 他没有纠正她。这是整个梗的落点——男主角被一次听错买了一台车。冷、干、不解释。一旦改成「我说的是钻戒！」，就变成小品，调性全塌。
+    </div>
+
+    <div class="stack">
+      <h3>性别变体</h3>
+      <p class="dim" style="font-size:14px">主版按「男 → 女」写，是因为求婚语境的识别成本最低。但这个结构对调完全成立，且更少套路。三版拍摄素材完全共用，只换配音——建议 A / B 两版同时投，看哪版复述率高。</p>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>版本</th><th>结构</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td class="n"><strong>A</strong></td><td>男说 → 女听错</td><td>主版。求婚语境识别最快</td></tr>
+            <tr><td class="n"><strong>B</strong></td><td>女说 → 男听错</td><td>推荐并行产出，套路感更低</td></tr>
+            <tr><td class="n"><strong>C</strong></td><td>去掉「给你」</td><td>「这次…我想买钻戒。」朋友、家人、自己都成立</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">AI 生成执行</span>
+      <h2>AI 做微距，不做车</h2>
+      <p class="dim">AI 视频模型渲染不出准确的尊界 S800——车标、格栅、灯组比例一定会错，一帧穿帮就等于品牌事故。</p>
+    </div>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>镜头</th><th>生成方式</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SC01</strong><br><span class="dim">丝绒 / 手 / 戒指盒</span></td><td><strong>全 AI 生成</strong></td><td>微距、材质、光——AI 的绝对强项，且没有品牌准确性风险</td></tr>
+          <tr><td><strong>SC02</strong><br><span class="dim">车</span></td><td>官方素材 / CG 渲染 / 实拍<br><span class="dim">AI 只做环境与光</span></td><td>品牌资产必须准确</td></tr>
+          <tr><td><strong>SC02</strong><br><span class="dim">备选</span></td><td>AI 生成 + <strong>强逆光剪影</strong></td><td>见下</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>逆光剪影：一个决定，同时解决三件事。</strong><br>
+      拿不到官方 CG 或实拍档期时，把 SC02 的车做成强逆光剪影——车身几乎全黑，只有轮廓线、车顶弧线、和最后点亮的灯带是亮的。<br><br>
+      <span class="dim"><strong>艺术上</strong>，这就是迈巴赫、劳斯莱斯广告的标准打法，比打亮全车高级得多。<strong>技术上</strong>，剪影掩盖了 AI 对车型细节的所有不准确。<strong>落版上</strong>，最后 1 秒亮起的灯带与车标用后期矢量图形叠加，100% 准确。</span>
+    </div>
+
+    <div class="stack-lg">
+      <div class="prompt">
+        <header><span class="id">SC01-a</span><span class="ds">0.0 – 2.6s · 丝绒与戒指盒</span></header>
+        <pre>Extreme macro shot, black velvet surface with visible fiber texture,
+a single elegant hand entering frame from the right, holding a small
+velvet ring box. Single hard key light from upper left, narrow beam,
+deep falloff into pure black. Cinematic, shallow depth of field,
+anamorphic, shot on 100mm macro lens. Ultra slow dolly-in.
+High-end jewelry commercial aesthetic, Cartier campaign.
+Color: pure black, warm white specular highlights only.
+No face, no text, no logo.</pre>
+        <div class="zh">极微距，黑丝绒纤维质感，一只手持丝绒戒指盒，左上单点硬光窄光束，深黑衰减，100mm 微距，极缓推镜，Cartier 广告质感，纯黑 + 暖白高光，无人脸无文字。</div>
+      </div>
+
+      <div class="prompt">
+        <header><span class="id">SC01-b</span><span class="ds">2.6 – 3.4s · 剪辑点</span></header>
+        <pre>Extreme macro, velvet ring box lid slowly hinging open, a sharp blade
+of white light escaping from the widening seam, lens flare across frame.
+Everything else in pure black. Slow motion, 120fps look.
+Camera locked. Hard rim light on the lid edge.
+No product visible inside yet.</pre>
+        <div class="zh">盒盖缓缓掀起，缝隙射出一道锐利白光并逐渐变宽，其余纯黑，升格质感，机位锁定，盒盖边缘硬轮廓光，<strong style="color:var(--fire);font-weight:400">内部尚未露出任何物体</strong>。</div>
+      </div>
+
+      <div class="note" style="font-size:13.5px">
+        <strong>「No product visible inside yet」是整段提示词里最关键的一句。</strong> 盒里绝不能出现戒指。观众必须以为里面有，但永远没看见——这个<strong>未兑现的期待</strong>正是反转的燃料。
+      </div>
+
+      <div class="prompt">
+        <header><span class="id">SC02-a</span><span class="ds">3.4 – 5.0s · 匹配剪辑落点</span></header>
+        <pre>Ultra-luxury electric sedan in a vast pitch-black hall, rear-hinged door
+rising slowly, a blade of white light escaping from the widening gap —
+matching the exact angle and angular velocity of a ring box lid opening.
+Strong backlight, car body almost entirely in silhouette, only the roof
+line and door edge catching light. Slow dolly-back. Cinematic,
+Maybach commercial aesthetic. Pure black and cold white.</pre>
+        <div class="zh">超豪华纯电轿车在极大的纯黑空间，车门缓缓升起，光缝的角度与角速度严格匹配盒盖，强逆光，车身近乎全剪影，仅车顶线与门沿吃光，缓慢后拉，迈巴赫广告质感。</div>
+      </div>
+
+      <div class="prompt">
+        <header><span class="id">SC02-b</span><span class="ds">5.0 – 7.6s · 尺度反转揭示</span></header>
+        <pre>Wide shot pulling back: a full-size luxury sedan resting on an enormous
+black velvet cushion, seated inside a giant jewelry vitrine slot —
+the exact visual logic of a ring box, at architectural scale.
+Velvet folds radiating outward, single hard spotlight from above,
+museum-like void surrounding. The car is backlit, in silhouette.
+Sense of impossible scale. Cinematic, symmetrical composition.</pre>
+        <div class="zh">后拉大全景：整台车停在巨大的黑丝绒垫上，嵌在一个巨型珠宝展柜凹槽里——戒指盒的画面逻辑，建筑的尺度。丝绒褶皱向外辐射，顶部单点硬光，博物馆式虚空，车逆光剪影，不可思议的尺度感，对称构图。</div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <h3>生成参数与素材量</h3>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>项</th><th>要求</th></tr></thead>
+          <tbody>
+            <tr><td>帧率</td><td>生成 24fps；SC01 建议按 48–60fps 生成后放慢，抠住「极缓」的质感</td></tr>
+            <tr><td>素材量</td><td>每个镜头至少出 <strong>8–12 条</strong>。丝绒 + 硬光是 AI 最容易翻车的组合（丝绒糊成塑料、光斑闪烁），靠数量筛</td></tr>
+            <tr><td>手部</td><td>AI 的手指仍不稳定。只拍到腕部、手指数量能数清的构图；出问题直接换条，<strong>不要修</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">后期规范</span>
+      <h2>两个色，一个剪辑点</h2>
+    </div>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>环节</th><th>规范</th></tr></thead>
+        <tbody>
+          <tr><td><strong>调色</strong></td><td>全片只有两个色：<strong>纯黑 + 高色温白</strong>。饱和度压到接近零，任何一点杂色都会掉档。黑位压死（0 IRE 附近），高光允许小面积过曝——这是珠宝广告的光感来源。SC01 与 SC02 的色温、黑位、光斑柔度必须完全一致，剪辑点才藏得住。</td></tr>
+          <tr><td><strong>剪辑</strong></td><td>全片 1 个剪辑点。不要加转场特效——匹配剪辑本身就是转场。剪辑点前后各留 6 帧素材做微调，光缝对齐要逐帧调。</td></tr>
+          <tr><td><strong>声音</strong></td><td>音乐用单件乐器（钢琴或大提琴泛音），不要成段旋律——音乐的作用是提供掩蔽瞬态和留白，不是煽情。<strong>绝对不要</strong>在反转处加「叮」的音效或音乐推进，那等于替观众划重点，反转的爽感就没了。混音留出人声频段（1–4kHz）的空间。</td></tr>
+          <tr><td><strong>字幕</strong></td><td>主版<strong>不上台词字幕</strong>。字幕会直接杀死谐音梗——观众看见「钻戒」两个字就没有误听空间了。无障碍版本另出一版带字幕的，单独投放，不作为主版本。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">落版 · 最后 0.4 秒</span>
+      <h2>三版，按渠道选</h2>
+    </div>
+
+    <div class="ends">
+      <div class="end">
+        <div class="plate">
+          <span class="bn">尊界</span>
+          <span class="bl">MAEXTRO</span>
+        </div>
+        <div class="txt">
+          <span class="nm">① 纯净版<span class="faint" style="font-size:11px"> · 主版</span></span>
+          <span class="ds">只有品牌标识和刚点亮的灯带。不解释，不加 slogan。投高奢 / 品牌向渠道。</span>
+        </div>
+      </div>
+      <div class="end">
+        <div class="plate">
+          <span class="bn">尊界 S800</span>
+          <span class="pr">¥ __.__ 万起</span>
+        </div>
+        <div class="txt">
+          <span class="nm">② 热搜版</span>
+          <span class="ds">投抖音 / 微博。价格数字由品牌方填入，本方案不擅自填写。依据见下节。</span>
+        </div>
+      </div>
+      <div class="end">
+        <div class="plate">
+          <span class="bn">尊界</span>
+          <span class="bl">MAEXTRO</span>
+        </div>
+        <div class="txt">
+          <span class="nm">③ 悬念版</span>
+          <span class="ds">连车型名都不给，逼评论区去搜。冷启动阶段测试传播效率用。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note" style="font-size:13.5px">
+      <strong>三版都不要写的东西：</strong>任何解释谐音的文案、任何「买尊界 = 送幸福」式的价值主张、任何促销信息。
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">传播设计</span>
+      <h2>这条片子不能当汽车广告发</h2>
+      <p class="dim">下面是本仓库 <span class="mono" style="font-size:12.5px">grounding.json</span> 抓取的 12 品类真实热搜热度（近 30 天去重上榜词数，截至 2026-08-21）。</p>
+    </div>
+
+    <div class="chart">
+      <div class="row"><span class="cat">社会民生</span><span class="track"><span class="bar" style="width:100%"></span></span><span class="val">850</span></div>
+      <div class="row"><span class="cat">明星八卦</span><span class="track"><span class="bar" style="width:52.6%"></span></span><span class="val">447</span></div>
+      <div class="row"><span class="cat">数码科技</span><span class="track"><span class="bar" style="width:51.8%"></span></span><span class="val">440</span></div>
+      <div class="row"><span class="cat">影视综艺</span><span class="track"><span class="bar" style="width:50.1%"></span></span><span class="val">426</span></div>
+      <div class="row"><span class="cat">体育赛事</span><span class="track"><span class="bar" style="width:49.2%"></span></span><span class="val">418</span></div>
+      <div class="row"><span class="cat">财经政策</span><span class="track"><span class="bar" style="width:16.1%"></span></span><span class="val">137</span></div>
+      <div class="row"><span class="cat">美食生活</span><span class="track"><span class="bar" style="width:14.9%"></span></span><span class="val">127</span></div>
+      <div class="row"><span class="cat">游戏动漫</span><span class="track"><span class="bar" style="width:14.7%"></span></span><span class="val">125</span></div>
+      <div class="row"><span class="cat">母婴亲子</span><span class="track"><span class="bar" style="width:13.5%"></span></span><span class="val">115</span></div>
+      <div class="row"><span class="cat">健康养生</span><span class="track"><span class="bar" style="width:12.9%"></span></span><span class="val">110</span></div>
+      <div class="row on"><span class="cat">新能源车</span><span class="track"><span class="bar" style="width:9.2%"></span><span class="tag">本片品类</span></span><span class="val">78</span></div>
+      <div class="row"><span class="cat">美妆时尚</span><span class="track"><span class="bar" style="width:6.5%"></span></span><span class="val">55</span></div>
+    </div>
+    <p class="chart-cap">新能源车品类的自然热度是明星八卦的 1/6、社会民生的 1/11，在 12 个品类里排倒数第二。</p>
+
+    <div class="note">
+      <strong>结论：它必须以「内容」的身份进场，借高热度品类的流量。</strong>
+    </div>
+
+    <div class="stack">
+      <h3>三段式投放</h3>
+      <ol class="measures">
+        <li>
+          <div>
+            <h3>素人内容位 · 冷启动</h3>
+            <p>不带品牌蓝 V，以「这广告我看了三遍」的第三方视角发。片子本身不解释，让评论区完成「我一开始也听成钻戒了」的自发传播。<strong style="color:var(--ink);font-weight:400">评论区就是这条广告的第二幕</strong>，不要抢台词。</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>二创放大</h3>
+            <p>这个结构天生适合二创，主动铺三种：情侣对话版（听错的日常延伸）、「你听清楚了吗」投票版（把双读设计直接变成互动）、其他谐音车名的接龙（用户自己会做，不用引导）。</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>官方接梗 · 热搜位</h3>
+            <p>按 <span class="mono" style="font-size:12px">grounding.json</span> 中真实验证过的打榜公式起标题。这是官方号唯一该说话的时机，也是唯一该解释谐音的时机——<strong style="color:var(--ink);font-weight:400">在片子外面，不在片子里面。</strong></p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>公式</th><th>品类热度</th><th>标题模板</th><th>真实上榜参照</th></tr></thead>
+        <tbody>
+          <tr><td><strong>事件通报</strong></td><td class="n">社会民生 850</td><td><strong>尊界回应买钻戒听成买尊界</strong></td><td class="dim">官方回应青岛大火</td></tr>
+          <tr><td><strong>官方消息</strong></td><td class="n">明星八卦 447</td><td>尊界官宣 + 事件</td><td class="dim">苹果官宣 WWDC26</td></tr>
+          <tr><td><strong>AI 应用热点</strong></td><td class="n">数码科技 440</td><td>一条 AI 广告让全网听错了两个字</td><td class="dim">AI 短剧女主 60 秒广告报价 25 万 8</td></tr>
+          <tr><td><strong>价格直给</strong></td><td class="n">新能源车 78</td><td>尊界 S800 价格</td><td class="dim">理想 L8 价格</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="dim" style="font-size:13.5px">「XX 回应」是社会民生品类（全库最高热度 850）验证最充分的结构，且和这个创意天然咬合：广告造成了「误听」，品牌「回应」误听。<br><br>「价格直给」则是新能源车品类排名第一的打榜公式——价格出现在一个 Cartier 质感的落版上，还顺手补完了「戒指 vs 车」的价格反差，这一下是双重的。</p>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">成功标准</span>
+      <h2>不是记住广告词，是主动复述</h2>
+    </div>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>时间</th><th>用户心理</th><th>由什么保证</th></tr></thead>
+        <tbody>
+          <tr><td class="n">第 1 秒</td><td><strong>「这是钻戒广告？」</strong></td><td>SC01 的 Cartier 拍法 + 零车元素泄露</td></tr>
+          <tr><td class="n">中间</td><td><strong>「等等，他说的是尊界？」</strong></td><td>匹配剪辑 + 那句半问句的「尊界？」</td></tr>
+          <tr><td class="n">最后</td><td><strong>「原来是这个梗。」</strong></td><td>那声「嗯」+ 不解释的落版</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stack">
+      <p>所以验收只看两个数：</p>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>指标</th><th>为什么是它</th></tr></thead>
+          <tbody>
+            <tr><td><strong>复看率</strong></td><td>这条片子是为第二遍设计的。复看率上不去，说明双读设计没做成。</td></tr>
+            <tr><td><strong>评论区自发解释率</strong></td><td>有多少人在评论里替品牌解释这个梗。这个数字越高，广告越成功。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        <strong>一句话检验：</strong>测试观众能不能用一句话把这条广告讲给别人听？讲不清楚，回去改结构，不要改文案。
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">风险</span>
+      <h2>成败在录音棚，不在剪辑台</h2>
+    </div>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>风险</th><th>后果</th><th>规避</th></tr></thead>
+        <tbody>
+          <tr><td><strong>音轨不够模糊</strong></td><td>反转失效，整条废掉</td><td>A / B 盲测，A 组必须出现分歧才放行</td></tr>
+          <tr><td>观众没听清任何一个词</td><td>只剩一条漂亮的空片子</td><td>B 组盲测 ≥ 80% 听成「钻戒」；不达标重录</td></tr>
+          <tr><td>前 3 秒泄露车元素</td><td>反转提前，白拍</td><td>SC01 逐帧审片：金属反光、环境倒影、任何车轮廓都不许有</td></tr>
+          <tr><td>AI 生成的车穿帮</td><td>品牌事故</td><td>强逆光剪影 + 车标灯带后期矢量合成</td></tr>
+          <tr><td>AI 生成的手指出错</td><td>廉价感，全片掉档</td><td>构图只到腕部；出问题换素材，不修</td></tr>
+          <tr><td>被读成「买车比买钻戒重要」</td><td>引发性别议题争议</td><td>全片无人脸、无关系交代；并行产出 B / C 版性别变体</td></tr>
+          <tr><td>落版加了解释文案</td><td>梗被讲死</td><td>落版三版均已写明禁项</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="dim" style="font-size:13.5px">最危险的永远是第一条。</p>
+  </div>
+</section>
+
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">制作清单</span>
+      <h2>开工前对一遍</h2>
+    </div>
+
+    <div class="checks">
+      <div class="check">
+        <span class="eyebrow">前期</span>
+        <ul>
+          <li>台词录 3 个版本（A 男→女 / B 女→男 / C 无关系指向）</li>
+          <li>掩蔽瞬态素材备选 3 种（香槟塞 / 钢琴重音 / 丝绒咔哒）</li>
+          <li class="stop">A / B 盲测通过 —— 卡点，不过不进下一步</li>
+        </ul>
+      </div>
+      <div class="check">
+        <span class="eyebrow">生成</span>
+        <ul>
+          <li>SC01 每镜出 8–12 条备选</li>
+          <li>SC01 逐帧检查：无车元素泄露、手指正常、丝绒质感未塑料化</li>
+          <li>SC02 车辆素材来源确认（官方 CG / 实拍 / 逆光剪影兜底）</li>
+        </ul>
+      </div>
+      <div class="check">
+        <span class="eyebrow">后期</span>
+        <ul>
+          <li>匹配剪辑逐帧对齐（动作角速度 / 光缝宽度 / 构图位置）</li>
+          <li>SC01 与 SC02 色温、黑位一致性核对</li>
+          <li class="stop">掩蔽瞬态与「钻」字对齐误差 ≤ 1 帧</li>
+          <li>反转处<strong style="color:var(--ink);font-weight:400">没有</strong>加任何提示性音效</li>
+          <li>主版无台词字幕</li>
+          <li>落版无解释性文案</li>
+        </ul>
+      </div>
+      <div class="check">
+        <span class="eyebrow">投放</span>
+        <ul>
+          <li>9:16 与 16:9 双版本</li>
+          <li>落版三版按渠道分配</li>
+          <li>无障碍字幕版单独产出</li>
+          <li>官方号「回应」话术备好，冷启动阶段不发</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<footer>
+  <div class="wrap">
+    <p>尊界 · MAEXTRO ｜《钻戒》8 秒 AI 短片广告创意方案</p>
+    <p>传播策略与打榜公式引自本仓库 <span class="mono">grounding.json</span>（微博 / 抖音近 100 天热搜归档，数据截至 2026-08-21 18:24 UTC）。落版价格为占位符，需品牌方填入。</p>
+  </div>
+</footer>
